@@ -25,6 +25,8 @@ type GPool struct {
 	FinishCount int
 	// 目标任务量
 	TargetCount int
+	// ResultChan 是否Close
+	IsClose bool
 }
 
 func NewGPool(size int) *GPool {
@@ -32,6 +34,7 @@ func NewGPool(size int) *GPool {
 	pool.JobChan = make(chan string, SIZE)
 	pool.ResultChan = make(chan bool, SIZE)
 	pool.Size = size
+	pool.IsClose = false
 	return &pool
 }
 
@@ -81,8 +84,9 @@ func (p *GPool) FinishOne() {
 // 关闭结果Channel
 func (p *GPool) TryClose() {
 	p.Lock()
-	if p.FinishCount == p.TargetCount {
+	if p.FinishCount == p.TargetCount && !p.IsClose{
 		close(p.ResultChan)
+		p.IsClose = true
 	}
 	p.Unlock()
 }
