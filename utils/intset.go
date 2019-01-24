@@ -20,3 +20,11 @@ func (set *IntSet) Intersection(set2 *IntSet) (*IntSet) {
 	}
 	return result
 }
+
+func (set *IntSet) ToSlice() []int{
+	res := make([]int, 0, 5)
+	for key:=range set.InternalMap{
+		res = append(res, key)
+	}
+	return res
+}
