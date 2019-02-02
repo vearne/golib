@@ -1,51 +1,67 @@
 package utils
 
 import (
+	"context"
+	"fmt"
 	"strconv"
 	"testing"
 	"time"
-	"context"
 )
 
-func doubleContextStr(ctx context.Context, key string) bool {
-	num, _ := strconv.Atoi(key)
+func JudgeStrWithContext(ctx context.Context, key interface{}) *GPResult {
+	num, _ := strconv.Atoi(key.(string))
+	result := &GPResult{}
 	time.Sleep(time.Millisecond * 50)
 	if num < 450 {
-		return true
+		result.Value = true
+	} else {
+		result.Value = false
 	}
-	return false
+	return result
 }
 
-func doubleContextStr2(ctx context.Context, key string) bool {
-	num, _ := strconv.Atoi(key)
+func JudgeStrWithContext2(ctx context.Context, key interface{}) *GPResult {
+	num, _ := strconv.Atoi(key.(string))
+	result := &GPResult{}
+
+	var canceled bool = false
+
 	for i := 0; i < 60; i++ {
 		select {
 		case <-ctx.Done():
-			return false
+			canceled = true
+			result.Value = false
+			result.Err = fmt.Errorf("normal termination")
 		default:
 			time.Sleep(time.Millisecond * 50)
 		}
 	}
-	if num < 450 {
-		return true
+
+	if !canceled {
+		if num < 450 {
+			result.Value = true
+		} else {
+			result.Value = false
+		}
 	}
-	return false
+
+	return result
 }
 
 func TestGContextPoolNoCancel(t *testing.T) {
 	p := NewGContextPool(30)
 
-	slice := []string{}
+	slice := make([]interface{}, 0)
 	for i := 0; i < 1000; i++ {
 		slice = append(slice, strconv.Itoa(i))
 	}
 
-	result := make([]bool, 0, 10)
+	result := make([]*GPResult, 0, 10)
 	trueCount := 0
 	falseCount := 0
-	for item := range p.ApplyAsync(doubleContextStr, slice) {
+	for item := range p.ApplyAsync(JudgeStrWithContext, slice) {
 		result = append(result, item)
-		if item {
+		if item.Value.(bool) {
 			trueCount++
 		} else {
 			falseCount++
@@ -62,12 +78,12 @@ func TestGContextPoolNoCancel(t *testing.T) {
 func TestGContextPoolCancel(t *testing.T) {
 	p := NewGContextPool(30)
 
-	slice := []string{}
+	slice := make([]interface{}, 0)
 	for i := 0; i < 1000; i++ {
 		slice = append(slice, strconv.Itoa(i))
 	}
 
-	result := make([]bool, 0, 10)
+	result := make([]*GPResult, 0, 10)
 	trueCount := 0
 	falseCount := 0
 
@@ -76,9 +92,13 @@ func TestGContextPoolCancel(t *testing.T) {
 		p.CancelFunc()
 	}()
 
-	for item := range p.ApplyAsync(doubleContextStr2, slice) {
+	for item := range p.ApplyAsync(JudgeStrWithContext2, slice) {
 		result = append(result, item)
-		if item {
+		if item.Err!= nil{
+			//log.Println("cancel", item.Err)
+			continue
+		}
+		if item.Value.(bool) {
 			trueCount++
 		} else {
 			falseCount++

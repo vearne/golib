@@ -7,15 +7,15 @@ import (
 )
 
 // 一个简易的协程池实现
-type JobContextFunc func(ctx context.Context, str string) bool
+type JobContextFunc func(ctx context.Context, key interface{}) *GPResult
 
 type GContextPool struct {
 	sync.Mutex
 
 	// 任务队列
-	JobChan chan string
+	JobChan chan interface{}
 	// 结果队列
-	ResultChan chan bool
+	ResultChan chan *GPResult
 	// 协程池的大小
 	Size int
 	// 已经完成的任务量
@@ -32,15 +32,15 @@ type GContextPool struct {
 
 func NewGContextPool(size int) *GContextPool {
 	pool := GContextPool{}
-	pool.JobChan = make(chan string, SIZE)
-	pool.ResultChan = make(chan bool, SIZE)
+	pool.JobChan = make(chan interface{}, SIZE)
+	pool.ResultChan = make(chan *GPResult, SIZE)
 	pool.Size = size
 	pool.IsClose = false
 	pool.Ctx, pool.CancelFunc = context.WithCancel(context.Background())
 	return &pool
 }
 
-func (p *GContextPool) ApplyAsync(f JobContextFunc, slice []string) <-chan bool {
+func (p *GContextPool) ApplyAsync(f JobContextFunc, slice []interface{}) <-chan *GPResult {
 
 	p.TargetCount = len(slice)
 	// Producer
@@ -58,7 +58,7 @@ func (p *GContextPool) Cancel() {
 	p.CancelFunc()
 }
 
-func (p *GContextPool) Produce(slice []string) {
+func (p *GContextPool) Produce(slice []interface{}) {
 	for _, key := range slice {
 		p.JobChan <- key
 	}
@@ -68,17 +68,21 @@ func (p *GContextPool) Produce(slice []string) {
 func (p *GContextPool) Consume(f JobContextFunc) {
 	for job := range p.JobChan {
 		defer func() {
-			err := recover()
-			if err != nil {
-				fmt.Errorf("execute job error, %v", err)
-				p.ResultChan <- false
+			r := recover()
+			if r != nil {
+				fmt.Errorf("execute job error, %v", r)
+				result := GPResult{Value: nil,
+					Err: fmt.Errorf("execute exception, job:%v", job)}
+				p.ResultChan <- &result
 				p.FinishOne()
 			}
 		}()
 
 		select {
 		case <-p.Ctx.Done():
-			p.ResultChan <- false
+			result := GPResult{Value: nil,
+				Err: fmt.Errorf("execute was terminated, job:%v", job)}
+			p.ResultChan <- &result
 		default:
 			// 没有结束 ... 执行 ...
 			p.ResultChan <- f(p.Ctx, job)

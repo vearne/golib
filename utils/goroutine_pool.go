@@ -9,16 +9,21 @@ const (
 	SIZE int = 50
 )
 
+type GPResult struct {
+	Value interface{}
+	Err   error
+}
+
 // 一个简易的协程池实现
-type JobFunc func(str string) bool
+type JobFunc func(param interface{}) *GPResult
 
 type GPool struct {
 	sync.Mutex
 
 	// 任务队列
-	JobChan chan string
+	JobChan chan interface{}
 	// 结果队列
-	ResultChan chan bool
+	ResultChan chan *GPResult
 	// 协程池的大小
 	Size int
 	// 已经完成的任务量
@@ -31,14 +36,14 @@ type GPool struct {
 
 func NewGPool(size int) *GPool {
 	pool := GPool{}
-	pool.JobChan = make(chan string, SIZE)
-	pool.ResultChan = make(chan bool, SIZE)
+	pool.JobChan = make(chan interface{}, SIZE)
+	pool.ResultChan = make(chan *GPResult, SIZE)
 	pool.Size = size
 	pool.IsClose = false
 	return &pool
 }
 
-func (p *GPool) ApplyAsync(f JobFunc, slice []string) <-chan bool {
+func (p *GPool) ApplyAsync(f JobFunc, slice []interface{}) <-chan *GPResult {
 
 	p.TargetCount = len(slice)
 	// Producer
@@ -51,7 +56,7 @@ func (p *GPool) ApplyAsync(f JobFunc, slice []string) <-chan bool {
 	return p.ResultChan
 }
 
-func (p *GPool) Produce(slice []string) {
+func (p *GPool) Produce(slice []interface{}) {
 	for _, key := range slice {
 		p.JobChan <- key
 	}
@@ -61,10 +66,12 @@ func (p *GPool) Produce(slice []string) {
 func (p *GPool) Consume(f JobFunc) {
 	for job := range p.JobChan {
 		defer func() {
-			err := recover()
-			if err != nil {
-				fmt.Errorf("execute job error, %v", err)
-				p.ResultChan <- false
+			r := recover()
+			if r != nil {
+				fmt.Errorf("execute job error, recover%v, job:%v", r, job)
+				result := GPResult{Value: nil,
+					Err: fmt.Errorf("execute exception, job:%v", job)}
+				p.ResultChan <- &result
 				p.FinishOne()
 			}
 		}()
@@ -84,7 +91,7 @@ func (p *GPool) FinishOne() {
 // 关闭结果Channel
 func (p *GPool) TryClose() {
 	p.Lock()
-	if p.FinishCount == p.TargetCount && !p.IsClose{
+	if p.FinishCount == p.TargetCount && !p.IsClose {
 		close(p.ResultChan)
 		p.IsClose = true
 	}
