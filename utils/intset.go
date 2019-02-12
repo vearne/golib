@@ -8,10 +8,20 @@ func NewIntSet() *IntSet {
 	return &IntSet{InternalMap: make(map[int]int)}
 }
 func (set *IntSet) Add(i int) {
-	set.InternalMap[i] = i
+	set.InternalMap[i] = 1
 }
 
-func (set *IntSet) Intersection(set2 *IntSet) (*IntSet) {
+func (set *IntSet) AddAll(itemSlice []int) {
+	for _, item := range itemSlice {
+		set.InternalMap[item] = 1
+	}
+}
+
+func (set *IntSet) Remove(key int) {
+	delete(set.InternalMap, key)
+}
+
+func (set *IntSet) Intersection(set2 *IntSet) *IntSet {
 	result := NewIntSet()
 	for key, _ := range set.InternalMap {
 		if _, ok := set2.InternalMap[key]; ok {
@@ -21,9 +31,9 @@ func (set *IntSet) Intersection(set2 *IntSet) (*IntSet) {
 	return result
 }
 
-func (set *IntSet) ToSlice() []int{
+func (set *IntSet) ToSlice() []int {
 	res := make([]int, 0, 5)
-	for key:=range set.InternalMap{
+	for key := range set.InternalMap {
 		res = append(res, key)
 	}
 	return res

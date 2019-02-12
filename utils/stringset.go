@@ -12,6 +12,16 @@ func (set *StringSet) Add(str string) {
 	set.InternalMap[str] = 1
 }
 
+func (set *StringSet) AddAll(itemSlice []string) {
+	for _, item := range itemSlice {
+		set.InternalMap[item] = 1
+	}
+}
+
+func (set *StringSet) Remove(str string) {
+	delete(set.InternalMap, str)
+}
+
 func (set *StringSet) ToArray() []string {
 	res := make([]string, len(set.InternalMap))
 	i := 0
