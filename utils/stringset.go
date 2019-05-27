@@ -18,6 +18,11 @@ func (set *StringSet) AddAll(itemSlice []string) {
 	}
 }
 
+func (set *StringSet) Has(str string) bool {
+	_, ok := set.InternalMap[str]
+	return ok
+}
+
 func (set *StringSet) Remove(str string) {
 	delete(set.InternalMap, str)
 }
