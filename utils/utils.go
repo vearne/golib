@@ -35,3 +35,10 @@ func Min(a, b int) int {
 		return b
 	}
 }
+
+func Stack() []byte {
+	buf := make([]byte, 2048)
+	n := runtime.Stack(buf, false)
+	return buf[:n]
+}
+
