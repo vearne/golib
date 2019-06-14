@@ -1,9 +1,9 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"sync"
-	"context"
 )
 
 // 一个简易的协程池实现
@@ -65,18 +65,19 @@ func (p *GContextPool) Produce(slice []interface{}) {
 	close(p.JobChan)
 }
 
+func doCtxOne(ctx context.Context, job interface{}, f JobContextFunc) (result *GPResult) {
+	defer func() {
+		r := recover()
+		if r != nil {
+			err := fmt.Errorf("execute job error, recover%v, job:%v", r, job)
+			result = &GPResult{Value: nil, Err: err}
+		}
+	}()
+	return f(ctx, job)
+}
+
 func (p *GContextPool) Consume(f JobContextFunc) {
 	for job := range p.JobChan {
-		defer func() {
-			r := recover()
-			if r != nil {
-				fmt.Errorf("execute job error, %v", r)
-				result := GPResult{Value: nil,
-					Err: fmt.Errorf("execute exception, job:%v", job)}
-				p.ResultChan <- &result
-				p.FinishOne()
-			}
-		}()
 
 		select {
 		case <-p.Ctx.Done():
@@ -85,7 +86,7 @@ func (p *GContextPool) Consume(f JobContextFunc) {
 			p.ResultChan <- &result
 		default:
 			// 没有结束 ... 执行 ...
-			p.ResultChan <- f(p.Ctx, job)
+			p.ResultChan <- doCtxOne(p.Ctx, job, f)
 		}
 		p.FinishOne()
 	}

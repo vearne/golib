@@ -63,19 +63,20 @@ func (p *GPool) Produce(slice []interface{}) {
 	close(p.JobChan)
 }
 
+func doOne(job interface{}, f JobFunc) (result *GPResult) {
+	defer func() {
+		r := recover()
+		if r != nil {
+			err := fmt.Errorf("execute job error, recover%v, job:%v", r, job)
+			result = &GPResult{Value: nil, Err: err}
+		}
+	}()
+	return f(job)
+}
+
 func (p *GPool) Consume(f JobFunc) {
 	for job := range p.JobChan {
-		defer func() {
-			r := recover()
-			if r != nil {
-				fmt.Errorf("execute job error, recover%v, job:%v", r, job)
-				result := GPResult{Value: nil,
-					Err: fmt.Errorf("execute exception, job:%v", job)}
-				p.ResultChan <- &result
-				p.FinishOne()
-			}
-		}()
-		p.ResultChan <- f(job)
+		p.ResultChan <- doOne(job, f)
 		p.FinishOne()
 	}
 	p.TryClose()
