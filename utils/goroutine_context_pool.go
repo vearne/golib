@@ -24,19 +24,17 @@ type GContextPool struct {
 	TargetCount int
 	// ResultChan 是否Close
 	IsClose bool
-	// 取消函数
-	CancelFunc context.CancelFunc
 	// Context
 	Ctx context.Context
 }
 
-func NewGContextPool(size int) *GContextPool {
+func NewGContextPool(ctx context.Context, size int) *GContextPool {
 	pool := GContextPool{}
 	pool.JobChan = make(chan interface{}, SIZE)
 	pool.ResultChan = make(chan *GPResult, SIZE)
 	pool.Size = size
 	pool.IsClose = false
-	pool.Ctx, pool.CancelFunc = context.WithCancel(context.Background())
+	pool.Ctx = ctx
 	return &pool
 }
 
@@ -51,11 +49,6 @@ func (p *GContextPool) ApplyAsync(f JobContextFunc, slice []interface{}) <-chan 
 	}
 
 	return p.ResultChan
-}
-
-func (p *GContextPool) Cancel() {
-	fmt.Println("Context Cancel")
-	p.CancelFunc()
 }
 
 func (p *GContextPool) Produce(slice []interface{}) {
@@ -82,7 +75,7 @@ func (p *GContextPool) Consume(f JobContextFunc) {
 		select {
 		case <-p.Ctx.Done():
 			result := GPResult{Value: nil,
-				Err: fmt.Errorf("execute was terminated, job:%v", job)}
+				Err: fmt.Errorf("execute was canceled, job:%v", job)}
 			p.ResultChan <- &result
 		default:
 			// 没有结束 ... 执行 ...
