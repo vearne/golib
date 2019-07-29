@@ -21,6 +21,10 @@ func (set *IntSet) Remove(key int) {
 	delete(set.InternalMap, key)
 }
 
+func (set *IntSet) Size() int {
+	return len(set.InternalMap)
+}
+
 func (set *IntSet) Intersection(set2 *IntSet) *IntSet {
 	result := NewIntSet()
 	for key, _ := range set.InternalMap {

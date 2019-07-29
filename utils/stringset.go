@@ -42,3 +42,7 @@ func (set *StringSet) ToArray() []string {
 	}
 	return res
 }
+
+func (set *StringSet) Size() int {
+	return len(set.InternalMap)
+}
