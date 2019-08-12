@@ -2,7 +2,7 @@ package utils
 
 import (
 	"crypto/md5"
-	"fmt"
+	"encoding/hex"
 	"github.com/imroc/req"
 	"io"
 	"net/http"
@@ -51,5 +51,11 @@ func GenMD5(strList []string) string {
 	for _, str := range strList {
 		io.WriteString(w, str)
 	}
-	return fmt.Sprintf("%x", w.Sum(nil))
+	return hex.EncodeToString(w.Sum(nil))
+}
+
+func GenMD5File(file io.Reader) string {
+	w := md5.New()
+	io.Copy(w, file)
+	return hex.EncodeToString(w.Sum(nil))
 }
