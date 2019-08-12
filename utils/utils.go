@@ -1,10 +1,13 @@
 package utils
 
 import (
+	"crypto/md5"
+	"fmt"
 	"github.com/imroc/req"
+	"io"
 	"net/http"
+	"runtime"
 	"time"
-    "runtime"
 )
 
 func SetConnPool() {
@@ -43,3 +46,10 @@ func Stack() []byte {
 	return buf[:n]
 }
 
+func GenMD5(strList []string) string {
+	w := md5.New()
+	for _, str := range strList {
+		io.WriteString(w, str)
+	}
+	return fmt.Sprintf("%x", w.Sum(nil))
+}
