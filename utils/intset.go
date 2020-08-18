@@ -21,6 +21,12 @@ func (set *IntSet) Remove(key int) {
 	delete(set.InternalMap, key)
 }
 
+func (set *IntSet) RemoveAll(other IntSet) {
+	for _, item := range other.ToArray() {
+		delete(set.InternalMap, item)
+	}
+}
+
 func (set *IntSet) Size() int {
 	return len(set.InternalMap)
 }
@@ -35,7 +41,7 @@ func (set *IntSet) Intersection(set2 *IntSet) *IntSet {
 	return result
 }
 
-func (set *IntSet) ToSlice() []int {
+func (set *IntSet) ToArray() []int {
 	res := make([]int, 0, 5)
 	for key := range set.InternalMap {
 		res = append(res, key)

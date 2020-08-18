@@ -46,3 +46,13 @@ func (set *StringSet) ToArray() []string {
 func (set *StringSet) Size() int {
 	return len(set.InternalMap)
 }
+
+func (set *StringSet) Intersection(set2 *StringSet) *StringSet {
+	result := NewStringSet()
+	for key, _ := range set.InternalMap {
+		if _, ok := set2.InternalMap[key]; ok {
+			result.Add(key)
+		}
+	}
+	return result
+}
