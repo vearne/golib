@@ -36,7 +36,7 @@ func (set *StringSet) RemoveAll(other StringSet) {
 func (set *StringSet) ToArray() []string {
 	res := make([]string, len(set.InternalMap))
 	i := 0
-	for key, _ := range set.InternalMap {
+	for key := range set.InternalMap {
 		res[i] = key
 		i++
 	}
