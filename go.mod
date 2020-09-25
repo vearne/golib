@@ -5,6 +5,7 @@ require (
 	github.com/gogf/gf v1.13.7
 	github.com/imroc/req v0.2.3
 	github.com/jinzhu/gorm v1.9.10
+	github.com/kr/pretty v0.2.1 // indirect
 	github.com/prometheus/client_golang v1.0.0
 )
 
