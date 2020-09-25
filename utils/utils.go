@@ -50,14 +50,20 @@ func Stack() []byte {
 func GenMD5(strList []string) string {
 	w := md5.New()
 	for _, str := range strList {
-		io.WriteString(w, str)
+		_, err := io.WriteString(w, str)
+		if err != nil {
+			log.Printf("io.WriteString,%v\n", err)
+		}
 	}
 	return hex.EncodeToString(w.Sum(nil))
 }
 
 func GenMD5File(file io.Reader) string {
 	w := md5.New()
-	io.Copy(w, file)
+	_, err := io.Copy(w, file)
+	if err != nil {
+		log.Printf("io.Copy,%v\n", err)
+	}
 	return hex.EncodeToString(w.Sum(nil))
 }
 

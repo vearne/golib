@@ -5,9 +5,8 @@ import (
 )
 
 func TestStringSet(t *testing.T) {
-
-	var set *StringSet
-	set = NewStringSet()
+	//var set *StringSet
+	set := NewStringSet()
 	set.Add("shangsan")
 	set.Add("lisi")
 	set.Add("shangsan")

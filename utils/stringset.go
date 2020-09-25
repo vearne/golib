@@ -49,7 +49,7 @@ func (set *StringSet) Size() int {
 
 func (set *StringSet) Intersection(set2 *StringSet) *StringSet {
 	result := NewStringSet()
-	for key, _ := range set.InternalMap {
+	for key := range set.InternalMap {
 		if _, ok := set2.InternalMap[key]; ok {
 			result.Add(key)
 		}

@@ -1,7 +1,7 @@
 package prom_cache
 
 import (
-	"github.com/gogf/gf/g/os/gcache"
+	"github.com/gogf/gf/os/gcache"
 	"github.com/prometheus/client_golang/prometheus"
 	"time"
 )
