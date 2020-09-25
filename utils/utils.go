@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"github.com/imroc/req"
 	"io"
+	"log"
 	"net/http"
 	"runtime"
 	"time"
@@ -58,4 +59,14 @@ func GenMD5File(file io.Reader) string {
 	w := md5.New()
 	io.Copy(w, file)
 	return hex.EncodeToString(w.Sum(nil))
+}
+
+func FuncWrapper(f func()) {
+	defer func() {
+		r := recover()
+		if r != nil {
+			log.Printf("function error, %v\n", r)
+		}
+	}()
+	f()
 }
