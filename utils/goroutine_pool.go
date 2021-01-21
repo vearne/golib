@@ -49,10 +49,10 @@ func (p *GPool) ApplyAsync(f JobFunc, slice []interface{}) <-chan *GPResult {
 	// Producer
 	go p.Produce(slice)
 	// consumer
+	p.Size = Min(p.Size, len(slice))
 	for i := 0; i < p.Size; i++ {
 		go p.Consume(f)
 	}
-
 	return p.ResultChan
 }
 

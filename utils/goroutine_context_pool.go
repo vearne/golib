@@ -44,6 +44,7 @@ func (p *GContextPool) ApplyAsync(f JobContextFunc, slice []interface{}) <-chan 
 	// Producer
 	go p.Produce(slice)
 	// consumer
+	p.Size = Min(p.Size, len(slice))
 	for i := 0; i < p.Size; i++ {
 		go p.Consume(f)
 	}
