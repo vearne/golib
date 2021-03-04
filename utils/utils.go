@@ -11,10 +11,10 @@ import (
 	"time"
 )
 
-func SetConnPool() {
+func SetHttpReqConfig(d time.Duration) {
 	client := &http.Client{}
 	client.Transport = &http.Transport{
-		MaxIdleConnsPerHost: 1000,
+		MaxIdleConnsPerHost: 500,
 		// 无需设置MaxIdleConns
 		// MaxIdleConns controls the maximum number of idle (keep-alive)
 		// connections across all hosts. Zero means no limit.
@@ -22,7 +22,7 @@ func SetConnPool() {
 	}
 
 	req.SetClient(client)
-	req.SetTimeout(5 * time.Second)
+	req.SetTimeout(d)
 }
 
 func Max(a, b int) int {
