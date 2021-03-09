@@ -24,9 +24,6 @@ func AddMySQL(client *gorm.DB, role string) {
 	if client == nil {
 		return
 	}
-
-	//client.DB().Stats()
-
 	mySQLCollector.lock.Lock()
 	defer mySQLCollector.lock.Unlock()
 
@@ -58,9 +55,12 @@ func (mc *MySQLCollector) register() {
 
 func (mc *MySQLCollector) stat(ch chan<- prometheus.Metric, desc *prometheus.Desc, typ prometheus.ValueType) {
 	for role, client := range mc.Clients {
-		db, _ := client.DB()
-		st := db.Stats()
+		db, err := client.DB()
+		if err != nil {
+			return
+		}
 
+		st := db.Stats()
 		ch <- prometheus.MustNewConstMetric(
 			desc,
 			typ,
@@ -86,9 +86,12 @@ func (mc *MySQLCollector) stat(ch chan<- prometheus.Metric, desc *prometheus.Des
 
 func (mc *MySQLCollector) fetches(ch chan<- prometheus.Metric, desc *prometheus.Desc, typ prometheus.ValueType) {
 	for role, client := range mc.Clients {
-		db, _ := client.DB()
-		st := db.Stats()
+		db, err := client.DB()
+		if err != nil {
+			return
+		}
 
+		st := db.Stats()
 		ch <- prometheus.MustNewConstMetric(
 			desc,
 			typ,
