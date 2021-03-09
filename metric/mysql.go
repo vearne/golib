@@ -1,8 +1,8 @@
 package metric
 
 import (
-	"github.com/jinzhu/gorm"
 	"github.com/prometheus/client_golang/prometheus"
+	"gorm.io/gorm"
 	"sync"
 )
 
@@ -25,7 +25,7 @@ func AddMySQL(client *gorm.DB, role string) {
 		return
 	}
 
-	client.DB().Stats()
+	//client.DB().Stats()
 
 	mySQLCollector.lock.Lock()
 	defer mySQLCollector.lock.Unlock()
@@ -58,7 +58,8 @@ func (mc *MySQLCollector) register() {
 
 func (mc *MySQLCollector) stat(ch chan<- prometheus.Metric, desc *prometheus.Desc, typ prometheus.ValueType) {
 	for role, client := range mc.Clients {
-		st := client.DB().Stats()
+		db, _ := client.DB()
+		st := db.Stats()
 
 		ch <- prometheus.MustNewConstMetric(
 			desc,
@@ -85,7 +86,8 @@ func (mc *MySQLCollector) stat(ch chan<- prometheus.Metric, desc *prometheus.Des
 
 func (mc *MySQLCollector) fetches(ch chan<- prometheus.Metric, desc *prometheus.Desc, typ prometheus.ValueType) {
 	for role, client := range mc.Clients {
-		st := client.DB().Stats()
+		db, _ := client.DB()
+		st := db.Stats()
 
 		ch <- prometheus.MustNewConstMetric(
 			desc,
