@@ -21,7 +21,7 @@ func (set *IntSet) Remove(key int) {
 	delete(set.InternalMap, key)
 }
 
-func (set *IntSet) RemoveAll(other IntSet) {
+func (set *IntSet) RemoveAll(other *IntSet) {
 	for _, item := range other.ToArray() {
 		delete(set.InternalMap, item)
 	}

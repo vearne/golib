@@ -27,7 +27,7 @@ func (set *StringSet) Remove(str string) {
 	delete(set.InternalMap, str)
 }
 
-func (set *StringSet) RemoveAll(other StringSet) {
+func (set *StringSet) RemoveAll(other *StringSet) {
 	for _, item := range other.ToArray() {
 		delete(set.InternalMap, item)
 	}
