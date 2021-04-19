@@ -53,3 +53,9 @@ func (set *IntSet) ToArray() []int {
 	}
 	return res
 }
+
+func (set *IntSet) Clone() *IntSet {
+	result := NewIntSet()
+	result.AddAll(set.ToArray())
+	return result
+}

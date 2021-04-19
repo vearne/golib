@@ -56,3 +56,9 @@ func (set *StringSet) Intersection(set2 *StringSet) *StringSet {
 	}
 	return result
 }
+
+func (set *StringSet) Clone() *StringSet {
+	result := NewStringSet()
+	result.AddAll(set.ToArray())
+	return result
+}
