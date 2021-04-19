@@ -17,6 +17,11 @@ func (set *IntSet) AddAll(itemSlice []int) {
 	}
 }
 
+func (set *IntSet) Has(key int) bool {
+	_, ok := set.InternalMap[key]
+	return ok
+}
+
 func (set *IntSet) Remove(key int) {
 	delete(set.InternalMap, key)
 }
