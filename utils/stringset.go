@@ -49,6 +49,11 @@ func (set *StringSet) Size() int {
 
 func (set *StringSet) Intersection(set2 *StringSet) *StringSet {
 	result := NewStringSet()
+
+	if set.Size() > set2.Size() {
+		set, set2 = set2, set
+	}
+
 	for key := range set.InternalMap {
 		if _, ok := set2.InternalMap[key]; ok {
 			result.Add(key)

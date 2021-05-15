@@ -38,6 +38,10 @@ func (set *IntSet) Size() int {
 
 func (set *IntSet) Intersection(set2 *IntSet) *IntSet {
 	result := NewIntSet()
+	if set.Size() > set2.Size() {
+		set, set2 = set2, set
+	}
+
 	for key := range set.InternalMap {
 		if _, ok := set2.InternalMap[key]; ok {
 			result.Add(key)

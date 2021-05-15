@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestInterSection1(t *testing.T) {
+func TestIntSetInterSection(t *testing.T) {
 
 	var a, b *IntSet
 	a = NewIntSet()
@@ -17,13 +17,11 @@ func TestInterSection1(t *testing.T) {
 	b.Add(3)
 	b.Add(5)
 	b.Add(7)
-	b.Add(9)
 
 	x := a.Intersection(b)
 
-
-	if  len(x.InternalMap) == 3{
-		t.Logf("success, %v", x)
+	if len(x.InternalMap) == 3 {
+		t.Logf("success, %v", x.ToArray())
 	} else {
 		t.Errorf("error")
 	}
