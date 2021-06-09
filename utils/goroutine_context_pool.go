@@ -9,6 +9,7 @@ import (
 // 一个简易的协程池实现
 type JobContextFunc func(ctx context.Context, key interface{}) *GPResult
 
+//nolint: govet
 type GContextPool struct {
 	sync.Mutex
 

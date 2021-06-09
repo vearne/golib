@@ -13,10 +13,10 @@ var (
 type getterFn func(ch chan<- prometheus.Metric, desc *prometheus.Desc, typ prometheus.ValueType)
 
 type collector struct {
+	getter getterFn
+
 	desc      *prometheus.Desc
 	valueType prometheus.ValueType
-
-	getter getterFn
 }
 
 func newCollector(

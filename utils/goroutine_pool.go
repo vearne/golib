@@ -17,6 +17,7 @@ type GPResult struct {
 // 一个简易的协程池实现
 type JobFunc func(param interface{}) *GPResult
 
+//nolint: govet
 type GPool struct {
 	sync.Mutex
 

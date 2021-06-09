@@ -16,12 +16,13 @@ type RedisClient interface {
 }
 
 type RedisCollector struct {
-	Clients    map[string]RedisClient
-	lock       sync.Mutex
-	registered bool
+	requestDurationHistogram *prometheus.HistogramVec
+	Clients                  map[string]RedisClient
 
-	requestDurationHistogram  *prometheus.HistogramVec
+	lock sync.Mutex
+
 	requestDurationRegistered bool
+	registered                bool
 }
 
 var redisCollector *RedisCollector

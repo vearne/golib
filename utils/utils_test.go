@@ -28,8 +28,8 @@ func TestStr2Byte(t *testing.T) {
 }
 
 type Car struct {
-	Age  int
 	Name string
+	Age  int
 }
 
 func TestCompareSame(t *testing.T) {

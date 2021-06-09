@@ -9,10 +9,10 @@ import (
 // local cache
 // 在local cache的基础上，增加了prometheus监控指标
 type PromCache struct {
-	Kind          string
 	InternalCache *gcache.Cache
 	PromReqTotal  *prometheus.CounterVec
 	PromSize      prometheus.GaugeFunc
+	Kind          string
 }
 
 func NewCacheWithProm(kind string, maxCapacity int) *PromCache {
