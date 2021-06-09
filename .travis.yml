@@ -11,3 +11,8 @@ before_script:
 
 script:
   - golangci-lint run --modules-download-mode=vendor
+
+
+
+
+
