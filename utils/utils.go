@@ -112,3 +112,30 @@ func Byte2Str(bt []byte) string {
 	tmp := (*reflect.SliceHeader)(unsafe.Pointer(&bt))
 	return *(*string)(unsafe.Pointer(tmp))
 }
+
+// CompareSame
+// notice: a and b must be struct
+func CompareSame(a, b interface{}, fieldNames []string) bool {
+	af := reflect.ValueOf(a)
+	bf := reflect.ValueOf(b)
+
+	for _, fieldName := range fieldNames {
+		aField := af.FieldByName(fieldName)
+		bField := bf.FieldByName(fieldName)
+		var isEqual bool
+		switch aField.Kind() {
+		case reflect.Int:
+			isEqual = aField.Int() == bField.Int()
+		case reflect.String:
+			isEqual = aField.String() == bField.String()
+		case reflect.Float64:
+			isEqual = aField.Float() == bField.Float()
+		case reflect.Float32:
+			isEqual = aField.Float() == bField.Float()
+		}
+		if !isEqual {
+			return false
+		}
+	}
+	return true
+}
