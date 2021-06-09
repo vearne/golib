@@ -10,7 +10,7 @@ before_script:
 
 
 script:
-  - golangci-lint run --modules-download-mode=vendor
+  - golangci-lint run 
 
 
 
