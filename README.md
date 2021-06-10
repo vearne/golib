@@ -1,5 +1,5 @@
 # golib
-![build_ci](https://travis-ci.org/vearne/golib.svg?branch=master)
+[![golang-ci](https://github.com/vearne/golib/actions/workflows/golang-ci.yml/badge.svg)](https://github.com/vearne/golib/actions/workflows/golang-ci.yml)
 
 ## 1. 数据结构  队列/栈
 ### 包路径
