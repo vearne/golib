@@ -2,16 +2,13 @@ package metric
 
 import (
 	"sync"
-	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
 type RedisClient interface {
-	WrapProcess(fn func(oldProcess func(cmd redis.Cmder) error) func(cmd redis.Cmder) error)
-	WrapProcessPipeline(func(old func([]redis.Cmder) error) func([]redis.Cmder) error)
-
+	AddHook(hook redis.Hook)
 	PoolStats() *redis.PoolStats
 }
 
@@ -64,27 +61,7 @@ func addRequestDuration(client RedisClient, role string) {
 		redisCollector.requestDurationRegistered = true
 	}
 
-	client.WrapProcess(func(old func(cmd redis.Cmder) error) func(cmd redis.Cmder) error {
-		return func(cmd redis.Cmder) error {
-			start := time.Now()
-			defer func() {
-				redisCollector.requestDurationHistogram.WithLabelValues(role).Observe(time.Since(start).Seconds())
-			}()
-
-			return old(cmd)
-		}
-	})
-
-	client.WrapProcessPipeline(func(old func([]redis.Cmder) error) func([]redis.Cmder) error {
-		return func(cmds []redis.Cmder) error {
-			start := time.Now()
-			defer func() {
-				redisCollector.requestDurationHistogram.WithLabelValues(role).Observe(time.Since(start).Seconds())
-			}()
-
-			return old(cmds)
-		}
-	})
+	client.AddHook(NewDurationHook(redisCollector, role))
 }
 
 func (rc *RedisCollector) stat(ch chan<- prometheus.Metric, desc *prometheus.Desc, typ prometheus.ValueType) {
