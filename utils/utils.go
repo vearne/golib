@@ -44,7 +44,7 @@ func Min(a, b int) int {
 	}
 }
 
-func Stack() []byte {
+func GoStack() []byte {
 	buf := make([]byte, 2048)
 	n := runtime.Stack(buf, false)
 	return buf[:n]
@@ -139,3 +139,5 @@ func CompareSame(a, b interface{}, fieldNames []string) bool {
 	}
 	return true
 }
+
+
