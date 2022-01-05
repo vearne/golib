@@ -1,6 +1,8 @@
 module github.com/vearne/golib
 
 require (
+	github.com/fatih/color v1.13.0 // indirect
+	github.com/gin-gonic/gin v1.7.7
 	github.com/go-redis/redis/v8 v8.10.0
 	github.com/gogf/gf v1.13.7
 	github.com/imroc/req v0.2.3

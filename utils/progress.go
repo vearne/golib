@@ -27,7 +27,7 @@ func progressStr(progress int) string {
 }
 
 /*
-	output: 
+	output:
 	[####                ] 20 %
 */
 func PrintProgress(progress int) {
