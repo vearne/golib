@@ -6,9 +6,13 @@ import (
 	"time"
 )
 
+type key string
+
 const (
-	StartTime = "start"
+	StartTime key = "_start"
 )
+
+
 
 type DurationHook struct {
 	redisCollector *RedisCollector
@@ -34,7 +38,7 @@ func (hook *DurationHook) AfterProcess(ctx context.Context, cmd redis.Cmder) err
 
 func (hook *DurationHook) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (context.Context, error) {
 	start := time.Now()
-	ctx = context.WithValue(ctx, "start", start)
+	ctx = context.WithValue(ctx, StartTime, start)
 	return ctx, nil
 }
 
