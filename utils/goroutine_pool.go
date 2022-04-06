@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"sync"
+	"sync/atomic"
 )
 
 const (
@@ -28,9 +29,9 @@ type GPool struct {
 	// 协程池的大小
 	Size int
 	// 已经完成的任务量
-	FinishCount int
+	FinishCount int32
 	// 目标任务量
-	TargetCount int
+	TargetCount int32
 	// ResultChan 是否Close
 	IsClose bool
 }
@@ -45,8 +46,7 @@ func NewGPool(size int) *GPool {
 }
 
 func (p *GPool) ApplyAsync(f JobFunc, slice []interface{}) <-chan *GPResult {
-
-	p.TargetCount = len(slice)
+	p.TargetCount = int32(len(slice))
 	// Producer
 	go p.Produce(slice)
 	// consumer
@@ -85,9 +85,7 @@ func (p *GPool) Consume(f JobFunc) {
 
 // 记录完成了一个任务
 func (p *GPool) FinishOne() {
-	p.Lock()
-	p.FinishCount++
-	p.Unlock()
+	atomic.AddInt32(&p.FinishCount, 1)
 }
 
 // 关闭结果Channel

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"sync/atomic"
 )
 
 // 一个简易的协程池实现
@@ -20,9 +21,9 @@ type GContextPool struct {
 	// 协程池的大小
 	Size int
 	// 已经完成的任务量
-	FinishCount int
+	FinishCount int32
 	// 目标任务量
-	TargetCount int
+	TargetCount int32
 	// ResultChan 是否Close
 	IsClose bool
 	// Context
@@ -40,8 +41,7 @@ func NewGContextPool(ctx context.Context, size int) *GContextPool {
 }
 
 func (p *GContextPool) ApplyAsync(f JobContextFunc, slice []interface{}) <-chan *GPResult {
-
-	p.TargetCount = len(slice)
+	p.TargetCount = int32(len(slice))
 	// Producer
 	go p.Produce(slice)
 	// consumer
@@ -90,9 +90,7 @@ func (p *GContextPool) Consume(f JobContextFunc) {
 
 // 记录完成了一个任务
 func (p *GContextPool) FinishOne() {
-	p.Lock()
-	p.FinishCount++
-	p.Unlock()
+	atomic.AddInt32(&p.FinishCount, 1)
 }
 
 // 关闭结果Channel
