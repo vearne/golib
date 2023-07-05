@@ -1,4 +1,4 @@
-// Copyright 2019 gf Author(https://github.com/gogf/gf). All Rights Reserved.
+// Copyright GoFrame Author(https://goframe.org). All Rights Reserved.
 //
 // This Source Code Form is subject to the terms of the MIT License.
 // If a copy of the MIT was not distributed with this file,
@@ -6,18 +6,20 @@
 
 package gconv
 
+import "reflect"
+
 // SliceStr is alias of Strings.
-func SliceStr(i interface{}) []string {
-	return Strings(i)
+func SliceStr(any interface{}) []string {
+	return Strings(any)
 }
 
-// Strings converts <i> to []string.
-func Strings(i interface{}) []string {
-	if i == nil {
+// Strings converts `any` to []string.
+func Strings(any interface{}) []string {
+	if any == nil {
 		return nil
 	}
 	var array []string
-	switch value := i.(type) {
+	switch value := any.(type) {
 	case []int:
 		array = make([]string, len(value))
 		for k, v := range value {
@@ -96,13 +98,38 @@ func Strings(i interface{}) []string {
 			array[k] = String(v)
 		}
 	default:
-		if v, ok := i.(apiStrings); ok {
+		if v, ok := any.(apiStrings); ok {
 			return v.Strings()
 		}
-		if v, ok := i.(apiInterfaces); ok {
+		if v, ok := any.(apiInterfaces); ok {
 			return Strings(v.Interfaces())
 		}
-		return []string{String(i)}
+		// Not a common type, it then uses reflection for conversion.
+		var reflectValue reflect.Value
+		if v, ok := value.(reflect.Value); ok {
+			reflectValue = v
+		} else {
+			reflectValue = reflect.ValueOf(value)
+		}
+		reflectKind := reflectValue.Kind()
+		for reflectKind == reflect.Ptr {
+			reflectValue = reflectValue.Elem()
+			reflectKind = reflectValue.Kind()
+		}
+		switch reflectKind {
+		case reflect.Slice, reflect.Array:
+			var (
+				length = reflectValue.Len()
+				slice  = make([]string, length)
+			)
+			for i := 0; i < length; i++ {
+				slice[i] = String(reflectValue.Index(i).Interface())
+			}
+			return slice
+
+		default:
+			return []string{String(any)}
+		}
 	}
 	return array
 }

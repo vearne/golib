@@ -1,4 +1,4 @@
-// Copyright 2018 gf Author(https://github.com/gogf/gf). All Rights Reserved.
+// Copyright GoFrame Author(https://goframe.org). All Rights Reserved.
 //
 // This Source Code Form is subject to the terms of the MIT License.
 // If a copy of the MIT was not distributed with this file,
@@ -7,9 +7,10 @@
 package gtype
 
 import (
-	"github.com/gogf/gf/util/gconv"
 	"strconv"
 	"sync/atomic"
+
+	"github.com/gogf/gf/util/gconv"
 )
 
 // Int32 is a struct for concurrent-safe operation for type int32.
@@ -60,12 +61,12 @@ func (v *Int32) String() string {
 
 // MarshalJSON implements the interface MarshalJSON for json.Marshal.
 func (v *Int32) MarshalJSON() ([]byte, error) {
-	return gconv.UnsafeStrToBytes(strconv.Itoa(int(v.Val()))), nil
+	return []byte(strconv.Itoa(int(v.Val()))), nil
 }
 
 // UnmarshalJSON implements the interface UnmarshalJSON for json.Unmarshal.
 func (v *Int32) UnmarshalJSON(b []byte) error {
-	v.Set(gconv.Int32(gconv.UnsafeBytesToStr(b)))
+	v.Set(gconv.Int32(string(b)))
 	return nil
 }
 

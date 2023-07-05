@@ -1,4 +1,4 @@
-// Copyright 2017 gf Author(https://github.com/gogf/gf). All Rights Reserved.
+// Copyright GoFrame Author(https://goframe.org). All Rights Reserved.
 //
 // This Source Code Form is subject to the terms of the MIT License.
 // If a copy of the MIT was not distributed with gm file,
@@ -54,7 +54,7 @@ func (m *IntStrMap) Iterator(f func(k int, v string) bool) {
 
 // Clone returns a new hash map with copy of current map data.
 func (m *IntStrMap) Clone() *IntStrMap {
-	return NewIntStrMapFrom(m.MapCopy(), !m.mu.IsSafe())
+	return NewIntStrMapFrom(m.MapCopy(), m.mu.IsSafe())
 }
 
 // Map returns the underlying data map.
@@ -429,7 +429,7 @@ func (m *IntStrMap) Merge(other *IntStrMap) {
 // String returns the map as a string.
 func (m *IntStrMap) String() string {
 	b, _ := m.MarshalJSON()
-	return gconv.UnsafeBytesToStr(b)
+	return string(b)
 }
 
 // MarshalJSON implements the interface MarshalJSON for json.Marshal.
@@ -446,7 +446,7 @@ func (m *IntStrMap) UnmarshalJSON(b []byte) error {
 	if m.data == nil {
 		m.data = make(map[int]string)
 	}
-	if err := json.Unmarshal(b, &m.data); err != nil {
+	if err := json.UnmarshalUseNumber(b, &m.data); err != nil {
 		return err
 	}
 	return nil
@@ -461,7 +461,7 @@ func (m *IntStrMap) UnmarshalValue(value interface{}) (err error) {
 	}
 	switch value.(type) {
 	case string, []byte:
-		return json.Unmarshal(gconv.Bytes(value), &m.data)
+		return json.UnmarshalUseNumber(gconv.Bytes(value), &m.data)
 	default:
 		for k, v := range gconv.Map(value) {
 			m.data[gconv.Int(k)] = gconv.String(v)

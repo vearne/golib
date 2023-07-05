@@ -1,4 +1,4 @@
-// Copyright 2019 gf Author(https://github.com/gogf/gf). All Rights Reserved.
+// Copyright GoFrame Author(https://goframe.org). All Rights Reserved.
 //
 // This Source Code Form is subject to the terms of the MIT License.
 // If a copy of the MIT was not distributed with this file,
@@ -7,27 +7,26 @@
 package gconv
 
 import (
-	"github.com/gogf/gf/internal/utils"
 	"reflect"
 )
 
 // SliceAny is alias of Interfaces.
-func SliceAny(i interface{}) []interface{} {
-	return Interfaces(i)
+func SliceAny(any interface{}) []interface{} {
+	return Interfaces(any)
 }
 
-// Interfaces converts <i> to []interface{}.
-func Interfaces(i interface{}) []interface{} {
-	if i == nil {
+// Interfaces converts `any` to []interface{}.
+func Interfaces(any interface{}) []interface{} {
+	if any == nil {
 		return nil
 	}
-	if r, ok := i.([]interface{}); ok {
+	if r, ok := any.([]interface{}); ok {
 		return r
-	} else if r, ok := i.(apiInterfaces); ok {
+	} else if r, ok := any.(apiInterfaces); ok {
 		return r.Interfaces()
 	} else {
 		var array []interface{}
-		switch value := i.(type) {
+		switch value := any.(type) {
 		case []string:
 			array = make([]interface{}, len(value))
 			for k, v := range value {
@@ -100,31 +99,38 @@ func Interfaces(i interface{}) []interface{} {
 		default:
 			// Finally we use reflection.
 			var (
-				rv   = reflect.ValueOf(i)
-				kind = rv.Kind()
+				reflectValue = reflect.ValueOf(any)
+				reflectKind  = reflectValue.Kind()
 			)
-			for kind == reflect.Ptr {
-				rv = rv.Elem()
-				kind = rv.Kind()
+			for reflectKind == reflect.Ptr {
+				reflectValue = reflectValue.Elem()
+				reflectKind = reflectValue.Kind()
 			}
-			switch kind {
+			switch reflectKind {
 			case reflect.Slice, reflect.Array:
-				array = make([]interface{}, rv.Len())
-				for i := 0; i < rv.Len(); i++ {
-					array[i] = rv.Index(i).Interface()
+				array = make([]interface{}, reflectValue.Len())
+				for i := 0; i < reflectValue.Len(); i++ {
+					array[i] = reflectValue.Index(i).Interface()
 				}
-			case reflect.Struct:
-				rt := rv.Type()
-				array = make([]interface{}, 0)
-				for i := 0; i < rv.NumField(); i++ {
-					// Only public attributes.
-					if !utils.IsLetterUpper(rt.Field(i).Name[0]) {
-						continue
-					}
-					array = append(array, rv.Field(i).Interface())
-				}
+			// Deprecated.
+			//// Eg: {"K1": "v1", "K2": "v2"} => ["K1", "v1", "K2", "v2"]
+			//case reflect.Map:
+			//	array = make([]interface{}, 0)
+			//	for _, key := range reflectValue.MapKeys() {
+			//		array = append(array, key.Interface())
+			//		array = append(array, reflectValue.MapIndex(key).Interface())
+			//	}
+			//// Eg: {"K1": "v1", "K2": "v2"} => ["K1", "v1", "K2", "v2"]
+			//case reflect.Struct:
+			//	array = make([]interface{}, 0)
+			//	// Note that, it uses the gconv tag name instead of the attribute name if
+			//	// the gconv tag is fined in the struct attributes.
+			//	for k, v := range Map(reflectValue) {
+			//		array = append(array, k)
+			//		array = append(array, v)
+			//	}
 			default:
-				return []interface{}{i}
+				return []interface{}{any}
 			}
 		}
 		return array

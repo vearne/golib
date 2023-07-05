@@ -3,8 +3,8 @@ package utils
 import (
 	"database/sql/driver"
 	"fmt"
+	"path/filepath"
 	"reflect"
-	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -15,17 +15,31 @@ var gormSourceDir string
 
 func init() {
 	_, file, _, _ := runtime.Caller(0)
-	gormSourceDir = regexp.MustCompile(`utils.utils\.go`).ReplaceAllString(file, "")
+	// compatible solution to get gorm source directory with various operating systems
+	gormSourceDir = sourceDir(file)
 }
 
+func sourceDir(file string) string {
+	dir := filepath.Dir(file)
+	dir = filepath.Dir(dir)
+
+	s := filepath.Dir(dir)
+	if filepath.Base(s) != "gorm.io" {
+		s = dir
+	}
+	return filepath.ToSlash(s) + "/"
+}
+
+// FileWithLineNum return the file name and line number of the current file
 func FileWithLineNum() string {
+	// the second caller usually from gorm internal, so set i start from 2
 	for i := 2; i < 15; i++ {
 		_, file, line, ok := runtime.Caller(i)
-
 		if ok && (!strings.HasPrefix(file, gormSourceDir) || strings.HasSuffix(file, "_test.go")) {
 			return file + ":" + strconv.FormatInt(int64(line), 10)
 		}
 	}
+
 	return ""
 }
 
@@ -33,17 +47,14 @@ func IsValidDBNameChar(c rune) bool {
 	return !unicode.IsLetter(c) && !unicode.IsNumber(c) && c != '.' && c != '*' && c != '_' && c != '$' && c != '@'
 }
 
-func CheckTruth(val interface{}) bool {
-	if v, ok := val.(bool); ok {
-		return v
+// CheckTruth check string true or not
+func CheckTruth(vals ...string) bool {
+	for _, val := range vals {
+		if val != "" && !strings.EqualFold(val, "false") {
+			return true
+		}
 	}
-
-	if v, ok := val.(string); ok {
-		v = strings.ToLower(v)
-		return v != "false"
-	}
-
-	return !reflect.ValueOf(val).IsZero()
+	return false
 }
 
 func ToStringKey(values ...interface{}) string {
@@ -67,6 +78,15 @@ func ToStringKey(values ...interface{}) string {
 	}
 
 	return strings.Join(results, "_")
+}
+
+func Contains(elems []string, elem string) bool {
+	for _, e := range elems {
+		if elem == e {
+			return true
+		}
+	}
+	return false
 }
 
 func AssertEqual(src, dst interface{}) bool {
@@ -110,4 +130,21 @@ func ToString(value interface{}) string {
 		return strconv.FormatUint(v, 10)
 	}
 	return ""
+}
+
+const nestedRelationSplit = "__"
+
+// NestedRelationName nested relationships like `Manager__Company`
+func NestedRelationName(prefix, name string) string {
+	return prefix + nestedRelationSplit + name
+}
+
+// SplitNestedRelationName Split nested relationships to `[]string{"Manager","Company"}`
+func SplitNestedRelationName(name string) []string {
+	return strings.Split(name, nestedRelationSplit)
+}
+
+// JoinNestedRelationNames nested relationships like `Manager__Company`
+func JoinNestedRelationNames(relationNames []string) string {
+	return strings.Join(relationNames, nestedRelationSplit)
 }

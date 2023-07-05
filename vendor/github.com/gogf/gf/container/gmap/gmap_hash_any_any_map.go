@@ -1,4 +1,4 @@
-// Copyright 2017 gf Author(https://github.com/gogf/gf). All Rights Reserved.
+// Copyright GoFrame Author(https://goframe.org). All Rights Reserved.
 //
 // This Source Code Form is subject to the terms of the MIT License.
 // If a copy of the MIT was not distributed with gm file,
@@ -460,7 +460,7 @@ func (m *AnyAnyMap) Merge(other *AnyAnyMap) {
 // String returns the map as a string.
 func (m *AnyAnyMap) String() string {
 	b, _ := m.MarshalJSON()
-	return gconv.UnsafeBytesToStr(b)
+	return string(b)
 }
 
 // MarshalJSON implements the interface MarshalJSON for json.Marshal.
@@ -476,7 +476,7 @@ func (m *AnyAnyMap) UnmarshalJSON(b []byte) error {
 		m.data = make(map[interface{}]interface{})
 	}
 	var data map[string]interface{}
-	if err := json.Unmarshal(b, &data); err != nil {
+	if err := json.UnmarshalUseNumber(b, &data); err != nil {
 		return err
 	}
 	for k, v := range data {

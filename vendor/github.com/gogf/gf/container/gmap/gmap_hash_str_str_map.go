@@ -1,4 +1,4 @@
-// Copyright 2017 gf Author(https://github.com/gogf/gf). All Rights Reserved.
+// Copyright GoFrame Author(https://goframe.org). All Rights Reserved.
 //
 // This Source Code Form is subject to the terms of the MIT License.
 // If a copy of the MIT was not distributed with gm file,
@@ -55,7 +55,7 @@ func (m *StrStrMap) Iterator(f func(k string, v string) bool) {
 
 // Clone returns a new hash map with copy of current map data.
 func (m *StrStrMap) Clone() *StrStrMap {
-	return NewStrStrMapFrom(m.MapCopy(), !m.mu.IsSafe())
+	return NewStrStrMapFrom(m.MapCopy(), m.mu.IsSafe())
 }
 
 // Map returns the underlying data map.
@@ -432,7 +432,7 @@ func (m *StrStrMap) Merge(other *StrStrMap) {
 // String returns the map as a string.
 func (m *StrStrMap) String() string {
 	b, _ := m.MarshalJSON()
-	return gconv.UnsafeBytesToStr(b)
+	return string(b)
 }
 
 // MarshalJSON implements the interface MarshalJSON for json.Marshal.
@@ -449,7 +449,7 @@ func (m *StrStrMap) UnmarshalJSON(b []byte) error {
 	if m.data == nil {
 		m.data = make(map[string]string)
 	}
-	if err := json.Unmarshal(b, &m.data); err != nil {
+	if err := json.UnmarshalUseNumber(b, &m.data); err != nil {
 		return err
 	}
 	return nil

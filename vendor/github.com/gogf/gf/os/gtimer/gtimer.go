@@ -1,11 +1,10 @@
-// Copyright 2019 gf Author(https://github.com/gogf/gf). All Rights Reserved.
+// Copyright GoFrame Author(https://goframe.org). All Rights Reserved.
 //
 // This Source Code Form is subject to the terms of the MIT License.
 // If a copy of the MIT was not distributed with this file,
 // You can obtain one at https://github.com/gogf/gf.
 
-// Package gtimer implements Hierarchical Timing Wheel for interval/delayed jobs
-// running and management.
+// Package gtimer implements timer for interval/delayed jobs running and management.
 //
 // This package is designed for management for millions of timing jobs. The differences
 // between gtimer and gcron are as follows:
@@ -20,33 +19,48 @@
 package gtimer
 
 import (
-	"fmt"
-	"math"
+	"github.com/gogf/gf/container/gtype"
+	"sync"
 	"time"
 
-	"github.com/gogf/gf/internal/cmdenv"
+	"github.com/gogf/gf/os/gcmd"
 )
 
+// Timer is the timer manager, which uses ticks to calculate the timing interval.
+type Timer struct {
+	mu      sync.RWMutex
+	queue   *priorityQueue // queue is a priority queue based on heap structure.
+	status  *gtype.Int     // status is the current timer status.
+	ticks   *gtype.Int64   // ticks is the proceeded interval number by the timer.
+	options TimerOptions   // timer options is used for timer configuration.
+}
+
+// TimerOptions is the configuration object for Timer.
+type TimerOptions struct {
+	Interval time.Duration // Interval is the interval escaped of the timer.
+}
+
 const (
-	STATUS_READY            = 0             // Job is ready for running.
-	STATUS_RUNNING          = 1             // Job is already running.
-	STATUS_STOPPED          = 2             // Job is stopped.
-	STATUS_RESET            = 3             // Job is reset.
-	STATUS_CLOSED           = -1            // Job is closed and waiting to be deleted.
-	gPANIC_EXIT             = "exit"        // Internal usage for custom job exit function with panic.
-	gDEFAULT_TIMES          = math.MaxInt32 // Default limit running times, a big number.
-	gDEFAULT_SLOT_NUMBER    = 10            // Default slot number.
-	gDEFAULT_WHEEL_INTERVAL = 50            // Default wheel interval.
-	gDEFAULT_WHEEL_LEVEL    = 6             // Default wheel level.
-	gCMDENV_KEY             = "gf.gtimer"   // Configuration key for command argument or environment.
+	StatusReady              = 0                    // Job or Timer is ready for running.
+	StatusRunning            = 1                    // Job or Timer is already running.
+	StatusStopped            = 2                    // Job or Timer is stopped.
+	StatusClosed             = -1                   // Job or Timer is closed and waiting to be deleted.
+	panicExit                = "exit"               // panicExit is used for custom job exit with panic.
+	defaultTimerInterval     = 100                  // defaultTimerInterval is the default timer interval in milliseconds.
+	commandEnvKeyForInterval = "gf.gtimer.interval" // commandEnvKeyForInterval is the key for command argument or environment configuring default interval duration for timer.
 )
 
 var (
-	defaultSlots    = cmdenv.Get(fmt.Sprintf("%s.slots", gCMDENV_KEY), gDEFAULT_SLOT_NUMBER).Int()
-	defaultLevel    = cmdenv.Get(fmt.Sprintf("%s.level", gCMDENV_KEY), gDEFAULT_WHEEL_LEVEL).Int()
-	defaultInterval = cmdenv.Get(fmt.Sprintf("%s.interval", gCMDENV_KEY), gDEFAULT_WHEEL_INTERVAL).Duration() * time.Millisecond
-	defaultTimer    = New(defaultSlots, defaultInterval, defaultLevel)
+	defaultTimer    = New()
+	defaultInterval = gcmd.GetOptWithEnv(commandEnvKeyForInterval, defaultTimerInterval).Duration() * time.Millisecond
 )
+
+// DefaultOptions creates and returns a default options object for Timer creation.
+func DefaultOptions() TimerOptions {
+	return TimerOptions{
+		Interval: defaultInterval,
+	}
+}
 
 // SetTimeout runs the job once after duration of <delay>.
 // It is like the one in javascript.
@@ -130,5 +144,5 @@ func DelayAddTimes(delay time.Duration, interval time.Duration, times int, job J
 // mechanism internally implementing this feature, which is designed for simplification
 // and convenience.
 func Exit() {
-	panic(gPANIC_EXIT)
+	panic(panicExit)
 }
