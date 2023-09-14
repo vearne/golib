@@ -12,6 +12,7 @@ type RedisClient interface {
 	PoolStats() *redis.PoolStats
 }
 
+// nolint:govet
 type RedisCollector struct {
 	Clients    map[string]RedisClient
 	lock       sync.Mutex
