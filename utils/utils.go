@@ -8,7 +8,6 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
-	"unsafe"
 )
 
 func Max(a, b int) int {
@@ -82,18 +81,6 @@ func GetFunctionName(i interface{}, seps ...rune) string {
 		return fields[size-1]
 	}
 	return ""
-}
-
-// 字符串转字节数组切片
-func Str2Byte(s string) []byte {
-	tmp := (*reflect.StringHeader)(unsafe.Pointer(&s))
-	return *(*[]byte)(unsafe.Pointer(tmp))
-}
-
-// 字节数组切片转字符串
-func Byte2Str(bt []byte) string {
-	tmp := (*reflect.SliceHeader)(unsafe.Pointer(&bt))
-	return *(*string)(unsafe.Pointer(tmp))
 }
 
 // CompareSame

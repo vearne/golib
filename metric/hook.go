@@ -25,8 +25,10 @@ func (hook *DurationHook) DialHook(next redis.DialHook) redis.DialHook {
 func (hook *DurationHook) ProcessHook(next redis.ProcessHook) redis.ProcessHook {
 	return func(ctx context.Context, cmd redis.Cmder) error {
 		start := time.Now()
-		defer hook.redisCollector.requestDurationHistogram.WithLabelValues(hook.role).
-			Observe(time.Since(start).Seconds())
+		defer func() {
+			duration := time.Since(start).Seconds()
+			hook.redisCollector.requestDurationHistogram.WithLabelValues(hook.role).Observe(duration)
+		}()
 		return next(ctx, cmd)
 	}
 }
@@ -34,8 +36,11 @@ func (hook *DurationHook) ProcessHook(next redis.ProcessHook) redis.ProcessHook 
 func (hook *DurationHook) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
 	return func(ctx context.Context, cmds []redis.Cmder) error {
 		start := time.Now()
-		defer hook.redisCollector.requestDurationHistogram.WithLabelValues(hook.role).
-			Observe(time.Since(start).Seconds())
+		defer func() {
+			duration := time.Since(start).Seconds()
+			hook.redisCollector.requestDurationHistogram.WithLabelValues(hook.role).Observe(duration)
+		}()
+
 		return next(ctx, cmds)
 	}
 }
