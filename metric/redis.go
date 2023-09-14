@@ -33,7 +33,6 @@ func init() {
 	}
 }
 
-// metric.AddRedis(redisClient, "car", metric.RequestDuration)
 func AddRedis(client RedisClient, role string) {
 	if client == nil {
 		return
