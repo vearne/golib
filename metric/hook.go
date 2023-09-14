@@ -39,3 +39,32 @@ func (hook *DurationHook) ProcessPipelineHook(next redis.ProcessPipelineHook) re
 		return next(ctx, cmds)
 	}
 }
+
+type CmdCounterHook struct {
+	redisCollector *RedisCollector
+	role           string
+}
+
+func NewCmdCounterHook(redisCollector *RedisCollector, role string) *DurationHook {
+	return &DurationHook{redisCollector: redisCollector, role: role}
+}
+
+func (hook *CmdCounterHook) DialHook(next redis.DialHook) redis.DialHook {
+	return func(ctx context.Context, network, addr string) (net.Conn, error) {
+		return next(ctx, network, addr)
+	}
+}
+
+func (hook *CmdCounterHook) ProcessHook(next redis.ProcessHook) redis.ProcessHook {
+	return func(ctx context.Context, cmd redis.Cmder) error {
+		hook.redisCollector.cmdCounter.WithLabelValues(hook.role).Inc()
+		return next(ctx, cmd)
+	}
+}
+
+func (hook *CmdCounterHook) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
+	return func(ctx context.Context, cmds []redis.Cmder) error {
+		hook.redisCollector.cmdCounter.WithLabelValues(hook.role).Add(float64(len(cmds)))
+		return next(ctx, cmds)
+	}
+}
