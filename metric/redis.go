@@ -13,13 +13,15 @@ type RedisClient interface {
 }
 
 type RedisCollector struct {
-	requestDurationHistogram *prometheus.HistogramVec
-	Clients                  map[string]RedisClient
+	Clients    map[string]RedisClient
+	lock       sync.Mutex
+	registered bool
 
-	lock sync.Mutex
-
+	requestDurationHistogram  *prometheus.HistogramVec
 	requestDurationRegistered bool
-	registered                bool
+
+	cmdCounter           *prometheus.CounterVec
+	cmdCounterRegistered bool
 }
 
 var redisCollector *RedisCollector
@@ -41,9 +43,11 @@ func AddRedis(client RedisClient, role string) {
 
 	if !redisCollector.registered {
 		redisCollector.register()
+		redisCollector.registered = true
 	}
 
 	addRequestDuration(client, role)
+	addCmdCounter(client, role)
 
 	redisCollector.Clients[role] = client
 }
@@ -62,6 +66,22 @@ func addRequestDuration(client RedisClient, role string) {
 	}
 
 	client.AddHook(NewDurationHook(redisCollector, role))
+}
+
+func addCmdCounter(client RedisClient, role string) {
+	if redisCollector.cmdCounter == nil {
+		redisCollector.cmdCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
+			Name: "cmd_total",
+			Help: "Number of cmd",
+		}, []string{"role"})
+	}
+
+	if !redisCollector.cmdCounterRegistered {
+		prometheus.MustRegister(redisCollector.cmdCounter)
+		redisCollector.cmdCounterRegistered = true
+	}
+
+	client.AddHook(NewCmdCounterHook(redisCollector, role))
 }
 
 func (rc *RedisCollector) stat(ch chan<- prometheus.Metric, desc *prometheus.Desc, typ prometheus.ValueType) {
