@@ -50,8 +50,8 @@ type CmdCounterHook struct {
 	role           string
 }
 
-func NewCmdCounterHook(redisCollector *RedisCollector, role string) *DurationHook {
-	return &DurationHook{redisCollector: redisCollector, role: role}
+func NewCmdCounterHook(redisCollector *RedisCollector, role string) *CmdCounterHook {
+	return &CmdCounterHook{redisCollector: redisCollector, role: role}
 }
 
 func (hook *CmdCounterHook) DialHook(next redis.DialHook) redis.DialHook {
