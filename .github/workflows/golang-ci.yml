@@ -41,8 +41,3 @@ jobs:
       - name: golangci-lint
         run: golangci-lint run --modules-download-mode=mod
 
-run:
-  skip-dirs:
-    - scripts
-    - test
-    - example
