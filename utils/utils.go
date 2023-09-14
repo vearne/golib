@@ -3,30 +3,13 @@ package utils
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"github.com/imroc/req"
 	"io"
 	"log"
-	"net/http"
 	"reflect"
 	"runtime"
 	"strings"
-	"time"
 	"unsafe"
 )
-
-func SetHttpReqConfig(d time.Duration) {
-	client := &http.Client{}
-	client.Transport = &http.Transport{
-		MaxIdleConnsPerHost: 500,
-		// 无需设置MaxIdleConns
-		// MaxIdleConns controls the maximum number of idle (keep-alive)
-		// connections across all hosts. Zero means no limit.
-		// MaxIdleConns 默认是0，0表示不限制
-	}
-
-	req.SetClient(client)
-	req.SetTimeout(d)
-}
 
 func Max(a, b int) int {
 	if a < b {
@@ -139,5 +122,3 @@ func CompareSame(a, b interface{}, fieldNames []string) bool {
 	}
 	return true
 }
-
-
