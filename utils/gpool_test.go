@@ -10,7 +10,7 @@ func Judge(key interface{}) *GPResult {
 	num, _ := strconv.Atoi(key.(string))
 	if num < 450 {
 		result.Value = true
-	}else{
+	} else {
 		result.Value = false
 	}
 	return result
@@ -42,4 +42,12 @@ func TestGPool1(t *testing.T) {
 	} else {
 		t.Errorf("error")
 	}
+}
+
+func TestGPool2(t *testing.T) {
+	p := NewGPool(10)
+	for item := range p.ApplyAsync(Judge, make([]interface{}, 0)) {
+		t.Errorf("error, %v", item)
+	}
+	t.Logf("success")
 }

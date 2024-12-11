@@ -10,7 +10,7 @@ import (
 // 一个简易的协程池实现
 type JobContextFunc func(ctx context.Context, key interface{}) *GPResult
 
-//nolint: govet
+// nolint: govet
 type GContextPool struct {
 	sync.Mutex
 
@@ -54,6 +54,10 @@ func (p *GContextPool) ApplyAsync(f JobContextFunc, slice []interface{}) <-chan 
 }
 
 func (p *GContextPool) Produce(slice []interface{}) {
+	if len(slice) == 0 {
+		close(p.ResultChan)
+	}
+
 	for _, key := range slice {
 		p.JobChan <- key
 	}

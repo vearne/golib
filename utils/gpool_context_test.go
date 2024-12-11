@@ -111,3 +111,14 @@ func TestGContextPoolCancel(t *testing.T) {
 		t.Errorf("cancel, %v, true:%v, false:%v", len(result), trueCount, falseCount)
 	}
 }
+
+func TestGContextPool2(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	p := NewGContextPool(ctx, 10)
+	for item := range p.ApplyAsync(JudgeStrWithContext, make([]interface{}, 0)) {
+		t.Errorf("error, %v", item)
+	}
+	t.Logf("success")
+}

@@ -18,7 +18,7 @@ type GPResult struct {
 // 一个简易的协程池实现
 type JobFunc func(param interface{}) *GPResult
 
-//nolint: govet
+// nolint: govet
 type GPool struct {
 	sync.Mutex
 
@@ -58,6 +58,9 @@ func (p *GPool) ApplyAsync(f JobFunc, slice []interface{}) <-chan *GPResult {
 }
 
 func (p *GPool) Produce(slice []interface{}) {
+	if len(slice) == 0 {
+		close(p.ResultChan)
+	}
 	for _, key := range slice {
 		p.JobChan <- key
 	}
